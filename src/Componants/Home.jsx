@@ -21,36 +21,6 @@ function Home() {
     const [segmentData, setSegmentData] = useState([])          // Store total list of Segments(Audiance)
     const [filteredSegments, setFilteredSegments] = useState([]) // Filtered segments with the searched clpid
 
-    // console.log(clpId);
-
-    const handleClpId = () => {
-        console.log("Inside handle clpid");
-        console.log("Current clpid", clpId);
-        fetchEntityData(clpId)
-        setClpId("")
-    }
-
-
-    // Generate token ==========================================================================================================
-
-    const fetchToken = async () => {
-        try {
-            console.log(`Attempting to fetch token from ${ServerUrl}/generate-token`);
-            const response = await axios.post(`${ServerUrl}/generate-token`);
-            console.log(response);
-            if (response.data && response.data.token) {
-                const fetchTokennew = response.data.token;
-                setToken(fetchTokennew);
-                return response.data.token;
-            }
-            else {
-                console.error("No token recieved in response")
-            }
-        } catch (error) {
-            console.error('Error fetching token:', error);
-        }
-    };
-    console.log(token);
 
     useEffect(() => {
         getProfileIntegrity()
@@ -75,13 +45,50 @@ function Home() {
         const newArray = newNestedObjectData.map(item => item.key)
         setKeysArray(newArray)
     }, [audiance]);
+    useEffect(() => {
+        if (segmentData.length > 0) {
+            const filtered = segmentData.filter(segment => keysArray.includes(segment.id));
+            setFilteredSegments(filtered);
+        }
+    }, [segmentData, keysArray]);
+
+    const handleClpId = () => {
+        console.log("Inside handle clpid");
+        console.log("Current clpid", clpId);
+        fetchEntityData(clpId)
+        setClpId("")
+    }
+
+
+    //  (1) Generate token ==========================================================================================================
+
+    const fetchToken = async () => {
+        try {
+            console.log(`Attempting to fetch token from ${ServerUrl}/generate-token`);
+            const response = await axios.post(`${ServerUrl}/generate-token`);
+            console.log(response);
+            if (response.data && response.data.token) {
+                const fetchTokennew = response.data.token;
+                setToken(fetchTokennew);
+                return response.data.token;
+            }
+            else {
+                console.error("No token recieved in response")
+            }
+        } catch (error) {
+            console.error('Error fetching token:', error);
+        }
+    };
+    console.log(token);
+
+
 
     console.log(audianceDetails);
     console.log(keysArray);
 
 
 
-    // Preview last succesful sample job =========================================================================
+    //  (2) Preview last succesful sample job =========================================================================
 
     const getProfileIntegrity = async () => {
         if (!token) {
@@ -102,7 +109,7 @@ function Home() {
     }
     console.log(profile);
 
-    // fetching the entities ======================================================================================
+    // (3) fetching the entities ======================================================================================
 
     const fetchEntityData = async (id) => {
         const schemaName = "_xdm.context.profile";
@@ -142,49 +149,42 @@ function Home() {
 
             const data = await response.json();
             // console.log(data);
-
             const entity = Object.keys(data).map(key => ({
                 id: key,
                 name: data[key].entity.person.name,
                 questrade: data[key].entity._questrade,
                 allData: data[key],
-                purposes: data[key].entity._questrade.purposes,
-                audianceData: data[key].entity.segmentMembership.ups
-            }));
+                purposes: data[key].entity._questrade?.purposes || [],
+                audianceData: data[key].entity.segmentMembership?.ups || []
 
-            // const entity = 
-            // const quest = data['G8jxBQFCb-lsRTpOlE5OoV8DmrgkEwY'].entity._questrade
-            ;
+                // const entity = 
+                // const quest = data['G8jxBQFCb-lsRTpOlE5OoV8DmrgkEwY'].entity._questrade
+            }));
             // console.log('Entity Data:', entity);
+
             setEntity(entity);
 
-            const purposes = entity.flatMap(e => e.purposes)
-            if(purposes){
-                setQuestrade(purposes)
-            }
-            else{
-                setQuestrade([])
-            }
-
-
             setAudiance(entity.flatMap(e => e.audianceData))
+            const purposes = entity.flatMap(e => e.purposes);
+            console.log('Purposes:', purposes); // Log the purposes
+            setQuestrade(purposes);
 
-
-        } catch (err) {
+        }
+        catch (err) {
             console.error('Error fetching entity data:', err);
         }
     };
     console.log(entities);
     console.log(questrade);
-    // console.log(audiance);
-
-
+    console.log(audiance);
 
     const handleSelect = (eventKey) => {
         setactive(eventKey)
     }
 
-    const fetchData = async () => {
+    // (5) Get all Audience=========================================================================
+
+    const fetchAudienceData = async () => {
 
         const URL = `https://platform.adobe.io/data/core/ups/segment/definitions?`
 
@@ -209,14 +209,44 @@ function Home() {
             console.log(error);
         }
     }
-    useEffect(() => {
-        if (segmentData.length > 0) {
-            const filtered = segmentData.filter(segment => keysArray.includes(segment.id));
-            setFilteredSegments(filtered);
-        }
-    }, [segmentData, keysArray]);
+
     console.log(segmentData);
     console.log(filteredSegments);
+
+    // Get query Templates=====================================================================================
+
+    const getQueryTemplates = async () => {
+
+        if (!token) {
+            alert("Token is not available")
+        }
+
+        const URL = `https://platform.adobe.io/data/foundation/query/query-templates`
+
+        try {
+
+            const response = await fetch(URL, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'x-api-key': '2383827e418049e3ad41507d03374c2f',
+                    'x-gw-ims-org-id': '3C4727E253DB241C0A490D4E@AdobeOrg',
+                    'x-sandbox-name': 'uatmmh'
+                }
+            })
+
+            if (!response.ok) {
+                alert("Not able to fetch data")
+            }
+
+            const data = await response.json()
+            console.log(data.templates);
+
+        } catch (error) {
+            console.error("ERROR :", error)
+
+        }
+    }
 
     // useEffect(() => {
     //     fetchData()
@@ -231,8 +261,8 @@ function Home() {
     //   }, [segmentData, keysArray]);
     //   console.log(filteredSegments);
 
-
     return (
+
         <>
 
             <div className='container text-center p-3'>
@@ -249,12 +279,12 @@ function Home() {
                     <div className='d-flex'>
                         <input value={clpId} onChange={e => setClpId(e.target.value)} className='form-control' type="text " placeholder='Enter the User Id' />
                         <button onClick={event => {
-                            handleClpId(); fetchData();
+                            handleClpId(); fetchAudienceData(); getQueryTemplates();
                         }} className='btn btn-primary ms-3'>Search</button>
                     </div>
                 </div>
 
-                <div className='w-100 container p-2 border border-primary my-3 '>
+                <div className='w-100 container p-2 border border-primary my-3  '>
                     <Nav className='d-flex text-center justify-content-around' variant="underline" defaultActiveKey="/home" onSelect={handleSelect}>
                         <Nav.Item>
                             <Nav.Link eventKey="link-0">Profile Integrity</Nav.Link>
@@ -387,14 +417,13 @@ function Home() {
 
                                         </tr>
 
-
                                     </React.Fragment>
                                 )) :
                                     <tr>"No Result"</tr>
                                 }
 
                                 {questrade.length > 0 ? questrade.map(item => (
-                                    <React.Fragment className="border border-info">
+                                    <React.Fragment className="border border-info mt-3">
                                         <tr>
                                             <td className='text-start ps-5'>Concent Date</td>
                                             <td className='text-start ps-5'>{item.consentDate}</td>
@@ -414,13 +443,12 @@ function Home() {
 
                                 }
 
-
                             </tbody>
                         </table>
                     )
                     }
                     {active === 'link-1' && (
-                        <table className='table  table-striped border p-2'>
+                        <table className='table  table-striped border p-2 mt-3'>
                             <thead>
                                 <tr>
                                     <th>SlNo</th>
@@ -446,7 +474,7 @@ function Home() {
                     )
                     }
                     {active === 'link-2' && (
-                        <table className='table  table-striped border p-2'>
+                        <table className='table  table-striped border p-2 mt-3'>
                             <thead>
                                 <tr>
                                     <th>SlNo</th>
@@ -477,12 +505,7 @@ function Home() {
                     )
                     }
                 </div>
-
-
-
             </div>
-
-
         </>
 
     )
