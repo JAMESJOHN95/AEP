@@ -20,6 +20,7 @@ function Home() {
     // const [allAudience, setAllAudience] = useState([])
     const [segmentData, setSegmentData] = useState([])          // Store total list of Segments(Audiance)
     const [filteredSegments, setFilteredSegments] = useState([]) // Filtered segments with the searched clpid
+    const [dataset, setDataset] = useState([])
 
 
     useEffect(() => {
@@ -248,6 +249,55 @@ function Home() {
         }
     }
 
+    // Get  dataset Files  with the dataset id ==============================================================================
+
+    const getAllDatasets = async () => {
+        console.log("Inside Get All Dataset");
+        if (!token) {
+            alert("Token is not Available")
+        }
+        const id = "662ad916b344342c9e7034d5"
+        const URL = `https://platform.adobe.io/data/foundation/export/datasets/${id}/preview`
+
+        try {
+            const response = await fetch(URL, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'x-api-key': '2383827e418049e3ad41507d03374c2f',
+                    'x-gw-ims-org-id': '3C4727E253DB241C0A490D4E@AdobeOrg',
+                    'x-sandbox-name': 'uatmmh'
+                }
+            })
+            if (!response.ok) {
+                alert("No able to get Data")
+            }
+            else {
+                const data = await response.json()
+                // console.log(data);
+                setDataset(data.data)
+            }
+
+        }
+        catch (err) {
+            console.log(err);
+        }
+    }
+    console.log(dataset);
+
+    const handleSearchButtonClick = async () => {
+        try {
+            await handleClpId();
+            await fetchAudienceData();
+            await getQueryTemplates();
+            await getAllDatasets();
+        } catch (error) {
+            console.error('Error in handling search:', error);
+            // Optionally, handle error feedback to the user
+        }
+    };
+
+
     // useEffect(() => {
     //     fetchData()
     //     console.log(segmentData);
@@ -278,9 +328,8 @@ function Home() {
                     </div>
                     <div className='d-flex'>
                         <input value={clpId} onChange={e => setClpId(e.target.value)} className='form-control' type="text " placeholder='Enter the User Id' />
-                        <button onClick={event => {
-                            handleClpId(); fetchAudienceData(); getQueryTemplates();
-                        }} className='btn btn-primary ms-3'>Search</button>
+                        <button onClick={handleSearchButtonClick
+                        } className='btn btn-primary ms-3'>Search</button>
                     </div>
                 </div>
 
@@ -304,204 +353,241 @@ function Home() {
                     </Nav>
 
                     {active === 'link-0' && (
-                        <table className='table border table-striped mt-3'>
-                            {/* <thead>
-                                <tr>
-                                    <th>SlNo</th>
-                                    <th>First Name</th>
-                                    <th>Last Name</th>
-                                    <th>UVVID</th>
-                                    <th>CLPID</th>
-                                </tr>
-                            </thead> */}
-                            <tbody>
-                                {entities.length > 0 ? entities.map((item, index) => (
-                                    <React.Fragment key={index}>
-                                        <tr >
-                                            <td className='text-start ps-5'>First Name</td>
-                                            <td className='text-start ps-5'>{item.name.firstName}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Last Name</td>
-                                            <td className='text-start ps-5'>{item.name.lastName}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Current Age</td>
-                                            <td className='text-start ps-5'>{item.questrade.currentAge}</td>
+                        <div className='w-full overflow-scroll'>
+                            <table className='table border table-responsive table-striped mt-3 p-2'>
+                                <thead>
+                                    <tr>
+                                        <th className='text-start ps-5'>Attributes</th>
+                                        <th className='text-start ps-5'>Values</th>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Current Equity</td>
-                                            <td className='text-start ps-5'>{item.questrade.currentEquity}</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {entities.length > 0 ? entities.map((item, index) => (
+                                        <React.Fragment key={index}>
+                                            <tr >
+                                                <td className='text-start ps-5'>First Name</td>
+                                                <td className='text-start ps-5'>{item.name.firstName}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Last Name</td>
+                                                <td className='text-start ps-5'>{item.name.lastName}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Current Age</td>
+                                                <td className='text-start ps-5'>{item.questrade.currentAge}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Trade Past Three Months</td>
-                                            <td className='text-start ps-5'>{item.questrade.tradePastThreeMthTotal}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Current Equity</td>
+                                                <td className='text-start ps-5'>{item.questrade.currentEquity}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Email</td>
-                                            <td className='text-start ps-5'>{item.questrade.email}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Trade Past Three Months</td>
+                                                <td className='text-start ps-5'>{item.questrade.tradePastThreeMthTotal}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>First Complete Account Date</td>
-                                            <td className='text-start ps-5'>{item.questrade.firstCompletedAccDate}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Email</td>
+                                                <td className='text-start ps-5'>{item.questrade.email}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Lead Source</td>
-                                            <td className='text-start ps-5'>{item.questrade.leadSource}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>First Complete Account Date</td>
+                                                <td className='text-start ps-5'>{item.questrade.firstCompletedAccDate}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Link Token</td>
-                                            <td className='text-start ps-5'>{item.questrade.linkToken}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Lead Source</td>
+                                                <td className='text-start ps-5'>{item.questrade.leadSource}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Onetrust Identifier</td>
-                                            <td className='text-start ps-5'>{item.questrade.oneTrustIdentifier}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Link Token</td>
+                                                <td className='text-start ps-5'>{item.questrade.linkToken}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>KYC Income</td>
-                                            <td className='text-start ps-5'>{item.questrade.kycIncome}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Onetrust Identifier</td>
+                                                <td className='text-start ps-5'>{item.questrade.oneTrustIdentifier}</td>
 
-                                        </tr>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>KYC Income</td>
+                                                <td className='text-start ps-5'>{item.questrade.kycIncome}</td>
 
-                                        <tr>
-                                            <td className='text-start ps-5'>Tenure</td>
-                                            <td className='text-start ps-5'>{item.questrade.tenure}</td>
+                                            </tr>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Area Average Invest </td>
-                                            <td className='text-start ps-5'>{item.questrade.areaAvgInvest}</td>
+                                            <tr>
+                                                <td className='text-start ps-5'>Tenure</td>
+                                                <td className='text-start ps-5'>{item.questrade.tenure}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>User Id Created Date </td>
-                                            <td className='text-start ps-5'>{item.questrade.userIdCreateDate}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Area Average Invest </td>
+                                                <td className='text-start ps-5'>{item.questrade.areaAvgInvest}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>User Id</td>
-                                            <td className='text-start ps-5'>{item.questrade.userID}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>User Id Created Date </td>
+                                                <td className='text-start ps-5'>{item.questrade.userIdCreateDate}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Merge Policy Id</td>
-                                            <td className='text-start ps-5'>{item.allData.mergePolicy.id}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>User Id</td>
+                                                <td className='text-start ps-5'>{item.questrade.userID}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Last Modified At</td>
-                                            <td className='text-start ps-5'>{item.allData.lastModifiedAt}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Merge Policy Id</td>
+                                                <td className='text-start ps-5'>{item.allData.mergePolicy.id}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Master Profile Id</td>
-                                            <td className='text-start ps-5'>{item.questrade.masterProfileID}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Last Modified At</td>
+                                                <td className='text-start ps-5'>{item.allData.lastModifiedAt}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>UVVID</td>
-                                            <td className='text-start ps-5'>{item.questrade.UVVID}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Master Profile Id</td>
+                                                <td className='text-start ps-5'>{item.questrade.masterProfileID}</td>
 
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>CLPID</td>
-                                            <td className='text-start ps-5'>{item.questrade.clpID}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>UVVID</td>
+                                                <td className='text-start ps-5'>{item.questrade.UVVID}</td>
 
-                                        </tr>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>CLPID</td>
+                                                <td className='text-start ps-5'>{item.questrade.clpID}</td>
 
-                                    </React.Fragment>
-                                )) :
-                                    <tr>"No Result"</tr>
-                                }
+                                            </tr>
 
-                                {questrade.length > 0 ? questrade.map(item => (
-                                    <React.Fragment className="border border-info mt-3">
-                                        <tr>
-                                            <td className='text-start ps-5'>Concent Date</td>
-                                            <td className='text-start ps-5'>{item.consentDate}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Concent Name</td>
-                                            <td className='text-start ps-5'>{item.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className='text-start ps-5'>Concent Status</td>
-                                            <td className='text-start ps-5'>{item.status}</td>
-                                        </tr>
-                                    </React.Fragment>
-                                ))
-                                    :
-                                    <React.Fragment><tr></tr></React.Fragment>
+                                        </React.Fragment>
+                                    )) :
+                                        <tr>"No Result"</tr>
+                                    }
 
-                                }
+                                    {questrade.length > 0 ? questrade.map(item => (
+                                        <React.Fragment className="border border-info mt-3">
+                                            <tr>
+                                                <td className='text-start ps-5'>Concent Date</td>
+                                                <td className='text-start ps-5'>{item.consentDate}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Concent Name</td>
+                                                <td className='text-start ps-5'>{item.name}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className='text-start ps-5'>Concent Status</td>
+                                                <td className='text-start ps-5'>{item.status}</td>
+                                            </tr>
+                                        </React.Fragment>
+                                    ))
+                                        :
+                                        <React.Fragment><tr></tr></React.Fragment>
 
-                            </tbody>
-                        </table>
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
                     )
                     }
                     {active === 'link-1' && (
-                        <table className='table  table-striped border p-2 mt-3'>
-                            <thead>
-                                <tr>
-                                    <th>SlNo</th>
-                                    <th>Total Merged Profile</th>
-                                    <th>Total Profit Count</th>
-                                    <th>Last Sampled Timestamp</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
+                        <div className='w-full overflow-scroll'>
+                            <table className='table table-striped table-responsive border p-2 mt-3'>
+                                <thead>
+                                    <tr>
+                                        <th>SlNo</th>
+                                        <th>Total Merged Profile</th>
+                                        <th>Total Profit Count</th>
+                                        <th>Last Sampled Timestamp</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
 
-                            <tbody>
-                                {/* {profile.map((item, index) => ( */}
-                                <tr >
-                                    <td></td>
-                                    <td>{profile.totalRows}</td>
-                                    <td>{profile.totalFragmentCount}</td>
-                                    <td>{profile.lastSampledTimestamp}</td>
-                                    <td>{profile.status}</td>
-                                </tr>
+                                <tbody>
+                                    {/* {profile.map((item, index) => ( */}
+                                    <tr >
+                                        <td></td>
+                                        <td>{profile.totalRows}</td>
+                                        <td>{profile.totalFragmentCount}</td>
+                                        <td>{profile.lastSampledTimestamp}</td>
+                                        <td>{profile.status}</td>
+                                    </tr>
 
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     )
                     }
                     {active === 'link-2' && (
-                        <table className='table  table-striped border p-2 mt-3'>
-                            <thead>
-                                <tr>
-                                    <th>SlNo</th>
-                                    <th>Audience Id</th>
-                                    <th>Audience Name</th>
-                                    <th>Description</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
+                        <div className='w-full overflow-scroll'>
+                            <table className='table table-responsive table-striped border p-2 mt-3'>
+                                <thead>
+                                    <tr>
+                                        <th>SlNo</th>
+                                        <th>Audience Id</th>
+                                        <th>Audience Name</th>
+                                        <th>Description</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
 
-                            <tbody>
-                                {filteredSegments.length > 0 ? (
-                                    filteredSegments.map((item, index) => (
-                                        <tr key={index}>
-                                            <td>{index + 1}</td>
-                                            <td>{item.id}</td>
-                                            <td>{item.name}</td>
-                                            <td>{item.description}</td>
-                                            <td></td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr></tr>
-                                )}
+                                <tbody>
+                                    {filteredSegments.length > 0 ? (
+                                        filteredSegments.map((item, index) => (
+                                            <tr key={index}>
+                                                <td>{index + 1}</td>
+                                                <td>{item.id}</td>
+                                                <td>{item.name}</td>
+                                                <td>{item.description}</td>
+                                                <td></td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr></tr>
+                                    )}
 
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
+                    )
+                    }
+
+                    {active === 'link-3' && (
+                        <div className='w-full overflow-scroll'>
+                            <table className='table table-responsive table-striped border p-2 mt-3'>
+                                <thead>
+                                    <tr>
+                                        <th>SlNo</th>
+                                        <th>Journey Version Name</th>
+                                        <th>ID</th>
+
+                                        <th></th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {dataset.length > 0 ? (
+                                        dataset.map((item, index) => (
+                                            <tr key={index}>
+                                                <td>{index + 1}</td>
+                                                <td>{item["_experience.journeyOrchestration.serviceType"]}</td>
+                                                <td>{item["_experience.journeyOrchestration.stepEvents.journeyVersionID"]
+                                                }</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr></tr>
+                                    )}
+
+                                </tbody>
+                            </table>
+                        </div>
                     )
                     }
                 </div>
