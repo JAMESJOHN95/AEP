@@ -3,17 +3,16 @@ import React, { useEffect, useState } from 'react'
 import { Nav } from 'react-bootstrap'
 import { ServerUrl } from './Server'
 import { useKey } from './Context'
+import Query from './Query'
 
 
 
-function Home() {
+function Home({token,setToken,clpId,setClpId}) {
 
     const [active, setactive] = useState('/home')               // Activate event Key used to display the details in the tab
-    const [token, setToken] = useState('')                      // Store Token
     const [profile, setProfile] = useState([])                  // Total data count
     const [entities, setEntity] = useState({})                  // Full details of the searches profile
     const [questrade, setQuestrade] = useState([])              // Purpose data
-    const [clpId, setClpId] = useState("")                      // CLPID
     const [audiance, setAudiance] = useState([])                // segment Membership data (array of objects)
     const [audianceDetails, setAudianceDetails] = useState({})  // segment membership ( map the array of objects to array with key and value)
     const [keysArray, setKeysArray] = useState([])              // list of audiances profile included in (segment id only)
@@ -21,6 +20,8 @@ function Home() {
     const [segmentData, setSegmentData] = useState([])          // Store total list of Segments(Audiance)
     const [filteredSegments, setFilteredSegments] = useState([]) // Filtered segments with the searched clpid
     const [dataset, setDataset] = useState([])
+    const [postQueryFunction, setPostQueryFunction] = useState(null);
+
 
 
     useEffect(() => {
@@ -59,8 +60,6 @@ function Home() {
         fetchEntityData(clpId)
         setClpId("")
     }
-
-
     //  (1) Generate token ==========================================================================================================
 
     const fetchToken = async () => {
@@ -256,7 +255,7 @@ function Home() {
         if (!token) {
             alert("Token is not Available")
         }
-        const id = "662ad916b344342c9e7034d5"
+        const id = "66a12247fae7612aeeee4210"
         const URL = `https://platform.adobe.io/data/foundation/export/datasets/${id}/preview`
 
         try {
@@ -291,6 +290,7 @@ function Home() {
             await fetchAudienceData();
             await getQueryTemplates();
             await getAllDatasets();
+            await postQueryFunction();
         } catch (error) {
             console.error('Error in handling search:', error);
             // Optionally, handle error feedback to the user
@@ -327,7 +327,7 @@ function Home() {
                         }
                     </div>
                     <div className='d-flex'>
-                        <input value={clpId} onChange={e => setClpId(e.target.value)} className='form-control' type="text " placeholder='Enter the User Id' />
+                        <input value={clpId} onChange={e => setClpId(e.target.value)} className='form-control' type="text" placeholder='Enter the User Id' />
                         <button onClick={handleSearchButtonClick
                         } className='btn btn-primary ms-3'>Search</button>
                     </div>
@@ -592,6 +592,7 @@ function Home() {
                     }
                 </div>
             </div>
+            <Query clpId={clpId} token={token} setPostQueryFunction={setPostQueryFunction} />
         </>
 
     )
