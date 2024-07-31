@@ -7,12 +7,12 @@ import Query from './Query'
 
 
 
-function Home({token,setToken,clpId,setClpId}) {
+function Home({ token, setToken, clpId, setClpId }) {
 
     const [active, setactive] = useState('/home')               // Activate event Key used to display the details in the tab
     const [profile, setProfile] = useState([])                  // Total data count
     const [entities, setEntity] = useState({})                  // Full details of the searches profile
-    const [questrade, setQuestrade] = useState([])              // Purpose data
+    const [questrade, setQuestrade] = useState([])              // Purpose data 
     const [audiance, setAudiance] = useState([])                // segment Membership data (array of objects)
     const [audianceDetails, setAudianceDetails] = useState({})  // segment membership ( map the array of objects to array with key and value)
     const [keysArray, setKeysArray] = useState([])              // list of audiances profile included in (segment id only)
@@ -213,40 +213,6 @@ function Home({token,setToken,clpId,setClpId}) {
     console.log(segmentData);
     console.log(filteredSegments);
 
-    // Get query Templates=====================================================================================
-
-    const getQueryTemplates = async () => {
-
-        if (!token) {
-            alert("Token is not available")
-        }
-
-        const URL = `https://platform.adobe.io/data/foundation/query/query-templates`
-
-        try {
-
-            const response = await fetch(URL, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'x-api-key': '2383827e418049e3ad41507d03374c2f',
-                    'x-gw-ims-org-id': '3C4727E253DB241C0A490D4E@AdobeOrg',
-                    'x-sandbox-name': 'uatmmh'
-                }
-            })
-
-            if (!response.ok) {
-                alert("Not able to fetch data")
-            }
-
-            const data = await response.json()
-            console.log(data.templates);
-
-        } catch (error) {
-            console.error("ERROR :", error)
-
-        }
-    }
 
     // Get  dataset Files  with the dataset id ==============================================================================
 
@@ -255,7 +221,7 @@ function Home({token,setToken,clpId,setClpId}) {
         if (!token) {
             alert("Token is not Available")
         }
-        const id = "66a12247fae7612aeeee4210"
+        const id = "662ad916b344342c9e7034d5"    // "66a12247fae7612aeeee4210"
         const URL = `https://platform.adobe.io/data/foundation/export/datasets/${id}/preview`
 
         try {
@@ -271,11 +237,10 @@ function Home({token,setToken,clpId,setClpId}) {
             if (!response.ok) {
                 alert("No able to get Data")
             }
-            else {
-                const data = await response.json()
-                // console.log(data);
-                setDataset(data.data)
-            }
+
+            const data = await response.json()
+            // console.log(data.data);
+            setDataset(data.data)
 
         }
         catch (err) {
@@ -289,7 +254,7 @@ function Home({token,setToken,clpId,setClpId}) {
             await handleClpId();
             await fetchAudienceData();
             await getQueryTemplates();
-            await getAllDatasets();
+            // await getAllDatasets();
             await postQueryFunction();
         } catch (error) {
             console.error('Error in handling search:', error);
@@ -560,6 +525,7 @@ function Home({token,setToken,clpId,setClpId}) {
 
                     {active === 'link-3' && (
                         <div className='w-full overflow-scroll'>
+                            <button onClick={getAllDatasets}>Get Journey Details</button>
                             <table className='table table-responsive table-striped border p-2 mt-3'>
                                 <thead>
                                     <tr>
@@ -576,7 +542,7 @@ function Home({token,setToken,clpId,setClpId}) {
                                         dataset.map((item, index) => (
                                             <tr key={index}>
                                                 <td>{index + 1}</td>
-                                                <td>{item["_experience.journeyOrchestration.serviceType"]}</td>
+                                                <td>{item["_experience.journeyOrchestration.stepEvents.journeyVersionName"]}</td>
                                                 <td>{item["_experience.journeyOrchestration.stepEvents.journeyVersionID"]
                                                 }</td>
                                             </tr>
